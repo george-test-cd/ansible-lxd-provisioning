@@ -1,0 +1,7 @@
+---
+- hosts: localhost
+  pre_tasks:
+  - name: Include environment specific variables
+    include_vars: "{{ lxd_env_definition }}"
+  roles:
+  - lxd-provision 

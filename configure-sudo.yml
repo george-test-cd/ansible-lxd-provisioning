@@ -1,0 +1,11 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Setup env keep for sudoers
+      lineinfile:
+        path: /etc/sudoers
+        line: "Defaults env_keep += \"{{ item }}\""
+      with_items:
+        - http_proxy
+        - https_proxy

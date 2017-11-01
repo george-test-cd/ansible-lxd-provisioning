@@ -1,0 +1,57 @@
+---
+- name: Configure http proxy
+  command: "lxc config set core.proxy_http {{ ansible_env.http_proxy }}"
+  when: lookup('env', 'http_proxy')
+
+- name: Configure https proxy
+  command: "lxc config set core.proxy_https {{ ansible_env.https_proxy }}"
+  when: lookup('env', 'https_proxy')
+
+- name: Create network
+  command: "lxc network create {{ lxd_network_name }} ipv6.address=none"
+  register: network_create_res
+  changed_when: network_create_res | succeeded
+  failed_when: (network_create_res | failed) and ('already exists' not in network_create_res.stderr)    
+
+- name: Create storage pool
+  command: "lxc storage create {{ lxd_env_id }} btrfs"
+  register: storage_create_res
+  changed_when: storage_create_res | succeeded
+  failed_when: (storage_create_res | failed) and ('already exists' not in storage_create_res.stderr)    
+    
+- name: Create a profile
+  lxd_profile:
+    name: "{{ lxd_env_id }}"
+    state: present
+    config:
+      environment.http_proxy: "{{ lookup('env', 'http_proxy') | default('') }}"
+      environment.https_proxy: "{{ lookup('env', 'https_proxy') | default('') }}"
+      environment.no_proxy: "localhost,127.0.0.1,.lxd"
+    description: "Profile for build {{ lxd_env_id }}"
+    devices:
+      eth0:
+        nictype: bridged
+        parent: "{{ lxd_network_name }}"
+        type: nic    
+      root:
+          path: /
+          pool: "{{ lxd_env_id }}"
+          type: disk
+    
+- name: Create started container
+  lxd_container:
+    name: "{{ lxd_env_id }}-{{ item.name }}"
+    state: started
+    config:
+      user.ansible.groups: "{{ item.groups }}"
+      user.ansible.lxd_env_id: "{{ lxd_env_id }}"
+    source:
+      type: image
+      mode: pull
+      server: https://us.images.linuxcontainers.org/
+      protocol: lxd
+      alias: ubuntu/xenial/amd64
+    profiles:
+      - "{{ lxd_env_id }}"
+    wait_for_ipv4_addresses: true
+  with_items: "{{ lxd_containers }}"

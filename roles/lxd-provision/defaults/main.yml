@@ -1,0 +1,8 @@
+---
+#lxd_env_id: "gitid"
+#lxd_containers:
+#- name: appserver
+#  groups: application,go-agents
+#- name: datserver
+#  groups: database
+lxd_network_name: "{{ lxd_env_id }}-br0"

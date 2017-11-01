@@ -1,0 +1,10 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Install packages
+      package:
+        name: "{{ item }}"
+      with_items:
+        - ca-certificates 
+        - openssl

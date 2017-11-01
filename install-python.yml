@@ -1,0 +1,30 @@
+---
+- hosts: all # install python with raw commands
+  gather_facts: no
+  tasks:
+    - name: Check python is installed
+      raw: test -e /usr/bin/python
+      register: python_install_check_res
+      failed_when: python_install_check_res.rc not in [0, 1]
+      changed_when: no
+
+    - name: Check apk is installed
+      raw: test -e /sbin/apk
+      register: apk_install_check_res
+      failed_when: apk_install_check_res.rc not in [0, 1]
+      changed_when: no
+
+    - name: Check apt is installed
+      raw: test -e /usr/bin/apt
+      register: apt_install_check_res
+      failed_when: apt_install_check_res.rc not in [0, 1]
+      changed_when: no
+    
+    - name: Install python with apt 
+      raw: sudo apt -y update && sudo apt install -y python-minimal
+      when: python_install_check_res.rc==1 and apt_install_check_res.rc==0
+
+    - name: Install python with apk 
+      raw: sudo apk update && sudo apk add python
+      when: python_install_check_res.rc==1 and apk_install_check_res.rc==0
+      

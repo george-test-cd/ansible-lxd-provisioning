@@ -1,0 +1,4 @@
+---
+lxd_containers:
+- name: server
+  groups: "app,web"
