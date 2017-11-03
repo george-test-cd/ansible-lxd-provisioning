@@ -21,10 +21,10 @@
       changed_when: no
     
     - name: Install python with apt 
-      raw: sudo apt -y update && sudo apt install -y python-minimal
+      raw: apt -y update && apt install -y python-minimal
       when: python_install_check_res.rc==1 and apt_install_check_res.rc==0
 
     - name: Install python with apk 
-      raw: sudo apk update && sudo apk add python
+      raw: apk update && apk add python
       when: python_install_check_res.rc==1 and apk_install_check_res.rc==0
       
